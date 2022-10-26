@@ -8,6 +8,7 @@ public class PaymentTestApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PaymentTestApplication.class, args);
+		
 	}
 
 }

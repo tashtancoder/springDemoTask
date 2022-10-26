@@ -1,0 +1,1 @@
+/*insert into CLIENT(CLIENT_ID, NAME, SURNAME, PASS, AMOUNT) values (1000, 'sergei', 'ivanov', 'pass321', 8.0);*/
