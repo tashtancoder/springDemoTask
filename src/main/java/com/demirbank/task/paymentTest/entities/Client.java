@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.demirbank.task.paymentTest.HashSha256;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -21,6 +22,7 @@ public class Client {
     @Column(name = "CLIENT_ID")
     private Long id;
     
+    @JsonIgnore
     @Column(name = "PASS")
     private String pass;
 
@@ -35,12 +37,15 @@ public class Client {
 
     @Column(name = "CURRENCY", columnDefinition = "varchar(10) default 'USD'")
     private String currency;
+    
+    @Column(name = "TOKEN")
+    private String token;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "CLIENT_ID")
     @OrderBy
     private List<Payment> payments;
-    protected Client(){
+    public Client(){
 
     }
     public Client(String pass, String name, String surname, Double amount, String currency){
@@ -50,6 +55,7 @@ public class Client {
         this.amount = amount;
         this.currency = currency;
         this.payments = new ArrayList<Payment>();
+        this.token = "";
     }
     public Client(String pass, String name, String surname, Double amount){
         this.pass = HashSha256.getHash(pass);
@@ -58,6 +64,7 @@ public class Client {
         this.amount = amount;
         this.currency = "USD";
         this.payments = new ArrayList<Payment>();
+        this.token = "";
     }
 
 
@@ -109,6 +116,14 @@ public class Client {
     }
     public void setCurrency(String currency){
         this.currency = currency;
+    }
+
+    public void setToken(String token){
+        this.token = token;
+    }
+
+    public String getToken(){
+        return token;
     }
    
     public String toString(){
