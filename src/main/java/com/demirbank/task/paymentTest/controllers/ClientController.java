@@ -66,13 +66,9 @@ public class ClientController {
         Client client = clientRepository.findByIdAndPass(id, HashSha256.getHash(pass));
         String token = "";
         if (client != null){
-            token = tokenManager.generateJwtToken("userName");
-            //token = getJWTToken(client.getId());
-            //token = "accessToken";
+            token = tokenManager.generateJwtToken("" + client.getId());
             client.setToken(token);
             clientRepository.save(client);
-            //clientTemp.setToken(token);
-            //clientTemp.setId(id);
         }
         TokenJwt tokenJwt = new TokenJwt(token, id, 5);
 
@@ -88,7 +84,6 @@ public class ClientController {
         if(client.getCurrency() == null){
             client.setCurrency("USD");
         }
-        //client.setPass(HashSha256.getHash(client.getPass()));
         clientRepository.save(client);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -150,34 +145,6 @@ public class ClientController {
         return token;
 
     }
-
-    private String getJWTTokenOld(Long id){
-        String token = "";
-        try {
-            Claims claims = Jwts.claims().setSubject("userName");
-            JwtBuilder jwt = Jwts.builder().setId(Constants.jwtId)
-            .setClaims(claims)
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + Constants.tokenExpiredTime * 60 * 1000))
-            .signWith(SignatureAlgorithm.HS512, Constants.sekretKey.getBytes());
-            token = jwt.compact();
-        } catch (Exception  e) {
-            System.out.println(e.toString());
-            token = "username";
-        }
-        return token;
-
-    }
-
-
-
-
-
-    
-
-
-        
-
 
 
 }

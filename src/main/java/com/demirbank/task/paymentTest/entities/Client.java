@@ -2,17 +2,26 @@ package com.demirbank.task.paymentTest.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+
 import com.demirbank.task.paymentTest.HashSha256;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.CascadeType;
+/*import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderBy; */
 
 
 @Entity
@@ -38,6 +47,7 @@ public class Client {
     @Column(name = "CURRENCY", columnDefinition = "varchar(10) default 'USD'")
     private String currency;
     
+    @JsonIgnore
     @Column(name = "TOKEN")
     private String token;
 
