@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -67,6 +68,7 @@ public class ClientController {
         String token = "";
         if (client != null){
             token = tokenManager.generateJwtToken("" + client.getId());
+            token = token.substring(8);
             client.setToken(token);
             clientRepository.save(client);
         }
@@ -102,19 +104,21 @@ public class ClientController {
         return new ResponseEntity<>(null, HttpStatus.MOVED_PERMANENTLY);    
     }
 
-    @PostMapping("/clients/{id}/payments")
-    public ResponseEntity<?> doPayment(@PathVariable Long id){
-        Payment payment = new Payment();
+    @PostMapping("/clients/{id}/payments") // post payment by client Id
+    public ResponseEntity<?> createPayment(@PathVariable Long id){
         Optional<Client> clientOptional = clientRepository.findById(id);
         Client client = clientOptional.get();
-        if (payment.getCost() <= client.getAmount()) {
-            client.addPayment(payment);
-            paymentRepo.save(payment);
-            return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
-        }
+        return doPayment(client);
         
+    }
+
+    @PostMapping("/payments") // post payment by client token
+    public ResponseEntity<?> createPayment(@RequestHeader("Authorization") String token){
+        //Optional<Client> clientOptional = clientRepository.findByToken(token.substring(7));
+        //Client client = clientOptional.get();
+        token = token.substring(7);
+        Client client = clientRepository.findByToken(token);
+        return doPayment(client);
     }
 
     @GetMapping("/clients/{id}/payments")
@@ -124,27 +128,24 @@ public class ClientController {
         return new ResponseEntity<List<Payment>>(client.getPayments(), HttpStatus.OK);
     }
 
-    
-
-    private String getJWTToken(Long id){
-        String base64EncodedSecret = "cXdlcnR5cGFzc3dvcmQ=";
-        byte[] decodedSecret = Base64.getDecoder().decode(base64EncodedSecret);
-        String token = "";
-        try {
-            Claims claims = Jwts.claims().setSubject("" + id);
-            JwtBuilder jwt = Jwts.builder().setId(Constants.jwtId)
-            .setClaims(claims)
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + Constants.tokenExpiredTime * 60 * 1000))
-            .signWith(SignatureAlgorithm.ES512, decodedSecret);
-            token = jwt.compact();
-        } catch (Exception  e) {
-            System.out.println(e.toString());
-            token = "username";
-        }
-        return token;
-
+    @GetMapping("/payments")
+    public ResponseEntity<List<Payment>> getPayments(@RequestHeader("Authorization") String token){
+        token = token.substring(7);
+        Client client = clientRepository.findByToken(token);
+        return new ResponseEntity<List<Payment>>(client.getPayments(), HttpStatus.OK);
     }
 
+    
+
+    private ResponseEntity<?> doPayment(Client client){
+        Payment payment = new Payment();
+        if (payment.getCost() <= client.getAmount()) {
+            client.addPayment(payment);
+            paymentRepo.save(payment);
+            return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
 
 }

@@ -47,7 +47,7 @@ public class Client {
     @Column(name = "CURRENCY", columnDefinition = "varchar(10) default 'USD'")
     private String currency;
     
-    @JsonIgnore
+    //@JsonIgnore
     @Column(name = "TOKEN")
     private String token;
 

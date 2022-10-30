@@ -10,5 +10,4 @@ public class PaymentTestApplication {
 		SpringApplication.run(PaymentTestApplication.class, args);
 		
 	}
-
 }
