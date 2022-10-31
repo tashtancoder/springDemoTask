@@ -13,12 +13,15 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2Res
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,10 +29,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demirbank.task.paymentTest.Constants;
 import com.demirbank.task.paymentTest.HashSha256;
-import com.demirbank.task.paymentTest.TokenJwt;
-import com.demirbank.task.paymentTest.TokenManager;
+import com.demirbank.task.paymentTest.authentication.TokenManager;
 import com.demirbank.task.paymentTest.entities.Client;
 import com.demirbank.task.paymentTest.entities.Payment;
+import com.demirbank.task.paymentTest.entities.TokenJwt;
 import com.demirbank.task.paymentTest.repositories.ClientJpaRepo;
 import com.demirbank.task.paymentTest.repositories.PaymentJpaRepo;
 
@@ -53,7 +56,7 @@ public class ClientController {
     public ClientController(ClientJpaRepo clientRepository, PaymentJpaRepo paymentRepo){
         this.clientRepository = clientRepository;
         this.paymentRepo = paymentRepo;
-        final Client client = new Client("pass321", "sergei", "ivanov", 8.0);
+        final Client client = new Client("pass321", "sergei", "ivanov");
         clientRepository.save(client);
     }
     
@@ -67,19 +70,51 @@ public class ClientController {
         Client client = clientRepository.findByIdAndPass(id, HashSha256.getHash(pass));
         String token = "";
         if (client != null){
-            token = tokenManager.generateJwtToken("" + client.getId());
-            token = token.substring(8);
-            client.setToken(token);
-            clientRepository.save(client);
-        }
-        TokenJwt tokenJwt = new TokenJwt(token, id, 5);
+            if (client.getIsBlocked()) { // if the Client is blocked then only show message with LOCKED status
+                //throw new LockedException("The Client is blocked");
+                return new ResponseEntity<>("The Client is blocked", HttpStatus.LOCKED);
+            } else {
+                token = tokenManager.generateJwtToken("" + client.getId()); // generate JWT token with client id
+                token = token.substring(8);
+                client.setToken(token);
+                client.setLoginAttempt(0);
+                clientRepository.save(client); 
+                // show token, client_id and token expired time in minutes
+                TokenJwt tokenJwt = new TokenJwt(token, id, Constants.tokenExpiredTime); 
+                return new ResponseEntity<>(tokenJwt, HttpStatus.OK);
+            }
+            
+        } else {
+            Optional<Client> cOptional = clientRepository.findById(id);
+            if (!cOptional.isEmpty()) {
+                client = cOptional.get();
+                client.setLoginAttempt(client.getLoginAttempt() + 1); // count incorrect login attempts
+                if (client.getLoginAttempt() > Constants.MAX_LOGIN_ATTEMPT) { // block the client if number of login attempt exceeds MAX_LOGIN_ATTEMPT
+                    client.setIsBlocked(true);
+                }
+                clientRepository.save(client); // save the client
+            }
+            //throw new UsernameNotFoundException("Invalid Client_id and/or password");
+            return new ResponseEntity<>("Invalid Client_id and/or password", HttpStatus.NOT_FOUND);
 
-        return new ResponseEntity<>(tokenJwt, HttpStatus.OK);
+        }
+        
+
+        
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestParam String token){
+        token = token.substring(7);
+        Client client = clientRepository.findByToken(token);
+        client.setToken(null);
+        clientRepository.save(client);
+        return new ResponseEntity<String>("client's session successfully invalidated", HttpStatus.valueOf(204));
+
     }
 
     @PostMapping("/clients")
-    public ResponseEntity<?> createClient(@RequestBody Client client, @RequestHeader("token") String token){
-        System.out.println(token);
+    public ResponseEntity<?> createClient(@RequestBody Client client){
         if (client.getAmount() == null){
             client.setAmount(8.0);
         }
@@ -114,8 +149,6 @@ public class ClientController {
 
     @PostMapping("/payments") // post payment by client token
     public ResponseEntity<?> createPayment(@RequestHeader("Authorization") String token){
-        //Optional<Client> clientOptional = clientRepository.findByToken(token.substring(7));
-        //Client client = clientOptional.get();
         token = token.substring(7);
         Client client = clientRepository.findByToken(token);
         return doPayment(client);
@@ -142,9 +175,9 @@ public class ClientController {
         if (payment.getCost() <= client.getAmount()) {
             client.addPayment(payment);
             paymentRepo.save(payment);
-            return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+            return new ResponseEntity<>("Payment accepted", HttpStatus.ACCEPTED);
         } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Insufficient amount", HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

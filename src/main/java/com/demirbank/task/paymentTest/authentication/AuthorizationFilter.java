@@ -1,18 +1,24 @@
-package com.demirbank.task.paymentTest;
+package com.demirbank.task.paymentTest.authentication;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.demirbank.task.paymentTest.Constants;
+import com.demirbank.task.paymentTest.entities.Client;
+import com.demirbank.task.paymentTest.repositories.ClientJpaRepo;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -27,13 +33,17 @@ import jakarta.servlet.http.HttpServletResponse;*/
 import io.jsonwebtoken.UnsupportedJwtException;
 
 public class AuthorizationFilter extends OncePerRequestFilter {
-    
+
+    @Inject
+    ClientJpaRepo clientRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filter)
             throws ServletException, IOException {
         // TODO Auto-generated method stub
         try {
             final String token = request.getHeader("Authorization");
+            //Client client = clientRepository.findByToken(token.substring(7));
             if (isJwtToken(token)) {
                 Claims claims = getClaims(token);
                 if(claims.get("authorities") != null) {

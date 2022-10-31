@@ -1,8 +1,15 @@
-package com.demirbank.task.paymentTest;
+package com.demirbank.task.paymentTest.entities;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TokenJwt {
     private String token;
+
+    @JsonProperty("client_id")
     private Long id;
+
+    @JsonProperty("expiredTime_in_minutes")
     private int expiredTime;
     public TokenJwt(String token, Long id, int expiredTime){
         this.token = token;

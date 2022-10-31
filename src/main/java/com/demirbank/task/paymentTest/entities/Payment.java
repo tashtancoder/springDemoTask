@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id; */
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,16 +25,16 @@ public class Payment {
     private Double cost;
 
     @Column(name = "DATE")
-    private LocalDate date;
+    private Date date;
     public Payment(){
         cost = 1.1;
-        date = LocalDate.now();
+        date = new Date();
 
     }
 
     public Payment(Double cost){
         this.cost = cost;
-        date = LocalDate.now();
+        date = new Date();
     }
 
     public Long getId(){
@@ -48,10 +49,10 @@ public class Payment {
     public void setCost(Double cost){
         this.cost = cost;
     }
-    public LocalDate getDate(){
+    public Date getDate(){
         return date;
     }
-    public void setDate(LocalDate date){
+    public void setDate(Date date){
         this.date = date;
     }
         

@@ -1,4 +1,4 @@
-package com.demirbank.task.paymentTest;
+package com.demirbank.task.paymentTest.authentication;
 
 import java.io.Serializable;
 import java.sql.Date;
@@ -12,6 +12,8 @@ import org.springframework.security.access.vote.ConsensusBased;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
+
+import com.demirbank.task.paymentTest.Constants;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

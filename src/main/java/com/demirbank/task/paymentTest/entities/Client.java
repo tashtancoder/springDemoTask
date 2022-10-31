@@ -41,15 +41,24 @@ public class Client {
     @Column(name = "SURNAME")
     private String surname;
 
-    @Column(name = "AMOUNT", columnDefinition = "Decimal(10,2) default '8'")
-    private Double amount;
+    @Column(name = "AMOUNT")
+    private Double amount = 8.0;
 
-    @Column(name = "CURRENCY", columnDefinition = "varchar(10) default 'USD'")
-    private String currency;
+    @Column(name = "CURRENCY")
+    private String currency = "USD";
     
-    //@JsonIgnore
+    @JsonIgnore
     @Column(name = "TOKEN")
     private String token;
+
+    @JsonIgnore
+    @Column(name = "ISBLOCKED")
+    private Boolean isBlocked = false;
+
+    @JsonIgnore
+    @Column(name = "LOGINATTEMPT")
+    private Integer loginAttempt = 0;
+    
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "CLIENT_ID")
@@ -58,6 +67,12 @@ public class Client {
     public Client(){
 
     }
+
+    public Client(String pass, String name, String surname){
+        this.pass = HashSha256.getHash(pass);
+        this.name = name;
+        this.surname = surname;
+    }
     public Client(String pass, String name, String surname, Double amount, String currency){
         this.pass = HashSha256.getHash(pass);
         this.name = name;
@@ -65,6 +80,7 @@ public class Client {
         this.amount = amount;
         this.currency = currency;
         this.payments = new ArrayList<Payment>();
+        this.isBlocked = false;
         this.token = "";
     }
     public Client(String pass, String name, String surname, Double amount){
@@ -74,6 +90,7 @@ public class Client {
         this.amount = amount;
         this.currency = "USD";
         this.payments = new ArrayList<Payment>();
+        this.isBlocked = false;
         this.token = "";
     }
 
@@ -134,6 +151,21 @@ public class Client {
 
     public String getToken(){
         return token;
+    }
+
+    public void setIsBlocked(Boolean isBlocked){
+        this.isBlocked = isBlocked;
+    }
+    public Boolean getIsBlocked(){
+        return isBlocked;
+    }
+
+    public void setLoginAttempt(Integer loginAttempt){
+        this.loginAttempt = loginAttempt;
+    }
+
+    public Integer getLoginAttempt(){
+        return loginAttempt;
     }
    
     public String toString(){
