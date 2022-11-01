@@ -76,7 +76,7 @@ public class Client {
         this.surname = surname;
     }
     public Client(String pass, String name, String surname, Double amount, String currency){
-        this.pass = HashSha256.getHash(pass);
+        this.pass = HashSha256.getHash(pass); // save hash value of password
         this.name = name;
         this.surname = surname;
         this.amount = amount;
@@ -85,7 +85,7 @@ public class Client {
         this.isBlocked = false;
     }
     public Client(String pass, String name, String surname, Double amount){
-        this.pass = HashSha256.getHash(pass);
+        this.pass = HashSha256.getHash(pass); // save hash value of password
         this.name = name;
         this.surname = surname;
         this.amount = amount;
@@ -116,7 +116,7 @@ public class Client {
     }
 
     public void setPass(String pass){
-        this.pass = HashSha256.getHash(pass);
+        this.pass = HashSha256.getHash(pass); // save hash value of password
     }
 
     public String getPass(){

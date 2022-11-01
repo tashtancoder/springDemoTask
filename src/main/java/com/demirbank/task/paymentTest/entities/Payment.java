@@ -1,6 +1,4 @@
 package com.demirbank.task.paymentTest.entities;
-
-import java.time.LocalDate;
 /*
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
