@@ -31,7 +31,7 @@ public class Client {
     @Column(name = "CLIENT_ID")
     private Long id;
     
-    @JsonIgnore
+    //@JsonIgnore
     @Column(name = "PASS")
     private String pass;
 
@@ -41,15 +41,12 @@ public class Client {
     @Column(name = "SURNAME")
     private String surname;
 
-    @Column(name = "AMOUNT")
+    @Column(name = "AMOUNT", columnDefinition = "Decimal(10,2)")
     private Double amount = 8.0;
 
     @Column(name = "CURRENCY")
     private String currency = "USD";
     
-    @JsonIgnore
-    @Column(name = "TOKEN")
-    private String token;
 
     @JsonIgnore
     @Column(name = "ISBLOCKED")
@@ -64,6 +61,11 @@ public class Client {
     @JoinColumn(name = "CLIENT_ID")
     @OrderBy
     private List<Payment> payments;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "CLIENT_ID")
+    private List<ActiveToken> tokens;
+
     public Client(){
 
     }
@@ -81,7 +83,6 @@ public class Client {
         this.currency = currency;
         this.payments = new ArrayList<Payment>();
         this.isBlocked = false;
-        this.token = "";
     }
     public Client(String pass, String name, String surname, Double amount){
         this.pass = HashSha256.getHash(pass);
@@ -91,7 +92,6 @@ public class Client {
         this.currency = "USD";
         this.payments = new ArrayList<Payment>();
         this.isBlocked = false;
-        this.token = "";
     }
 
 
@@ -138,19 +138,22 @@ public class Client {
         this.amount = this.amount - payment.getCost();
     }
 
+    public List<ActiveToken> getTokens(){
+        return tokens;
+    }
+    public void addToken(ActiveToken activeToken){
+        this.tokens.add(activeToken);
+    }
+
+    public void removeToken(ActiveToken token){
+        this.tokens.remove(token);
+    }
+
     public String getCurrency(){
         return this.currency;
     }
     public void setCurrency(String currency){
         this.currency = currency;
-    }
-
-    public void setToken(String token){
-        this.token = token;
-    }
-
-    public String getToken(){
-        return token;
     }
 
     public void setIsBlocked(Boolean isBlocked){

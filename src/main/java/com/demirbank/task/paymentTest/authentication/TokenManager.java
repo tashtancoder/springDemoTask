@@ -37,8 +37,11 @@ public class TokenManager implements Serializable{
 				.signWith(SignatureAlgorithm.HS512,
 						Constants.sekretKey.getBytes()).compact();
 
-        return Constants.TOKEN_PREFIX + " " + token;
-     } 
+        //return Constants.TOKEN_PREFIX + " " + token;
+		return token;
+     }
+	 
+	 
 
     
 }
