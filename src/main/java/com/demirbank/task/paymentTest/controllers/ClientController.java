@@ -217,8 +217,8 @@ public class ClientController {
 
 
     private ResponseEntity<?> doPayment(Client client){
-        Payment payment = new Payment();
-        if (payment.getCost() <= client.getAmount()) {
+        Payment payment = new Payment(); // create a payment with a cost of 1.1
+        if (payment.getCost() <= client.getAmount()) { // check if left amount is sufficient to make a payment
             client.addPayment(payment);
             paymentRepo.save(payment);
             return new ResponseEntity<>("Payment accepted", HttpStatus.ACCEPTED);
